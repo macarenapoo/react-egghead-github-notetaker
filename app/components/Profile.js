@@ -11,28 +11,35 @@ var Profile = React.createClass({
   mixins: [ReactFireMixin],
   getInitialState: function(){
     return {
-      notes: [1, 2, 3],
+      notes: [],
       bio: {
-        name: 'Macarena Poo'
+        name: ''
       },
-      repos: ['a', 'b', 'c']
+      repos: []
     }
   },
   componentDidMount: function(){
     this.ref = new Firebase("https://react-github-notetak.firebaseIO.com");
-    var childRef = this.ref.child(this.props.params.username);
+    this.init(this.props.params.username);
+  },
+  componentWillUnmount: function(){
+    this.unbind('notes');
+  },
+  componentWillReceiveProps: function(nextProps){
+    this.unbind('notes');
+    this.init(nextProps.params.username);
+  },
+  init: function(username){
+    var childRef = this.ref.child(username);
     this.bindAsArray(childRef, 'notes');
 
-    helpers.getGithubInfo(this.props.params.username)
+    helpers.getGithubInfo(username)
       .then(function(data){
         this.setState({
           bio: data.bio,
           repos: data.repos
         })
       }.bind(this));
-  },
-  componentWillUnmount: function(){
-    this.unbind('notes');
   },
   handleAddNote: function(newNote){
     //update firebase with newNote
